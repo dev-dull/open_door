@@ -5,7 +5,7 @@ from threading import Thread
 from datetime import datetime
 
 class FaceDetectThread(Thread):
-    def __init__(self, in_queue, out_queue, cascade_filenames, scale=1.33, min_neighbors=5, box_color=(0, 0x80, 0xFF)):
+    def __init__(self, in_queue, out_queue, cascade_filenames, scale=1.05, min_neighbors=6, box_color=(0, 0x80, 0xFF)):
         Thread.__init__(self)
         self.box_color = box_color
         self.iq = in_queue
@@ -19,7 +19,7 @@ class FaceDetectThread(Thread):
                           'haarcascade_profileface.xml',
                           'haarcascade_frontalface_alt_tree.xml']
         # results in a lot of false-positives. Separated from the others so its easy to comment out.
-        cascade_filenames.append('haarcascade_frontalface_default.xml')
+        #cascade_filenames.append('haarcascade_frontalface_default.xml')
         self.cascades = self._get_cascades(cascade_filenames)
 
     def _get_cascades(self, face_cascade_files):
@@ -39,7 +39,8 @@ class FaceDetectThread(Thread):
             gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
             for cascade_name,cascade in self.cascades.items():
-                found_faces = cascade.detectMultiScale(gray_image, scaleFactor=self.scale, minNeighbors=self.min_neighbors)
+                #found_faces = cascade.detectMultiScale(gray_image, scaleFactor=self.scale, minNeighbors=self.min_neighbors)
+                found_faces = cascade.detectMultiScale(gray_image, minNeighbors=self.min_neighbors)
                 if len(found_faces):
                     for (x,y,w,h) in found_faces:
                         cv2.rectangle(image, (x, y), (x+w, y+h), self.box_color, 2)

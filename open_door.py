@@ -33,7 +33,7 @@ class OpenDoor(Thread):
         self.pfct = 0
         self.pfps = 0
 
-        self.score_average = 0
+        self.score_average = 0x7fffffffffffffffe
 
     def image_diff(self, previous_image, new_image):
         diff_image = cv2.absdiff(previous_image, new_image)
@@ -44,7 +44,6 @@ class OpenDoor(Thread):
         while True:
             image = self.cam_queue.get()
             score,id = self.image_diff(previous_image, image)
-            self.score_average = (score + self.score_average)/2
             previous_image = image
 
             self.fct += 1
@@ -52,11 +51,14 @@ class OpenDoor(Thread):
             elapsed_time = current_time - self.start_time
 
             #if self.find_queue.qsize() < 1:
-            if score > self.score_average * 1.25:
+            if score > self.score_average * 1.4:
                 print('Put an image into the find queue')
                 self.find_queue.put(image)
                 self.pfct += 1
                 self.pfps = ((self.pfct/elapsed_time)+self.pfps)/2
+            else:
+                self.score_average = (score + self.score_average)/2
+
             if self.found_queue.qsize() > 0:
                 image = self.found_queue.get()
                 self.found_queue.task_done()
